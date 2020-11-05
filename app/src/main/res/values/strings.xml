@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">Evaluacion 4</string>
+    <string name="menu_contacto">Contacto</string>
+    <string name="menu_acerca">Acerca De</string>
+    <string name="pnombre">nombre</string>
+    <string name="pcontador"></string>
+    <string name="nombre">Andrés Felipe Ríos Bolívar</string>
+
+
+</resources>
