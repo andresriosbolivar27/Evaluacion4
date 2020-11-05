@@ -14,7 +14,7 @@ import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
-public class JavaMailAPI extends AsyncTask<Void,Void,Void>  {
+public class JavaMailAPI  {
 
     //Add those line in dependencies
     //implementation files('libs/activation.jar')
@@ -41,39 +41,24 @@ public class JavaMailAPI extends AsyncTask<Void,Void,Void>  {
         this.mMessage = mMessage;
     }
 
-    @Override
-    public void onPreExecute() {
-        super.onPreExecute();
-        //Show progress dialog while sending email
-        mProgressDialog = ProgressDialog.show(mContext,"Sending message", "Please wait...",false,false);
-    }
-
-    @Override
-    public void onPostExecute(Void aVoid) {
-        super.onPostExecute(aVoid);
-        //Dismiss progress dialog when message successfully send
-        mProgressDialog.dismiss();
-
-        //Show success toast
-        Toast.makeText(mContext,"Message Sent",Toast.LENGTH_SHORT).show();
-    }
-
-    @Override
-    public Void doInBackground(Void... params) {
+    public void enviar(){
         //Creating properties
-        Properties properties = new Properties();
+        Properties props = new Properties();
 
         //Configuring properties for gmail
         //If you are not using gmail you may need to change the values
-        properties.put("mail.smtp.host", "mail.gmail.com");
-        properties.put("mail.smtp.starttls.enable", "true");
-        properties.put("mail.smtp.port",25);
-        properties.put("mail.smtp.mail.sender",Utils.EMAIL);
-        properties.put("mail.smtp.user", "contactoevaluacion4");
-        properties.put("mail.smtp.auth", "true");
+        props.put("mail.smtp.auth", "true");
+        props.put("mail.smtp.host", "smtp.gmail.com");
+        props.put("mail.smtp.port", "587");
 
         //Creating a new session
-        mSession = Session.getDefaultInstance(properties);
+        mSession = Session.getDefaultInstance(props,
+                new javax.mail.Authenticator() {
+                    //Authenticating the password
+                    protected PasswordAuthentication getPasswordAuthentication() {
+                        return new PasswordAuthentication(Utils.EMAIL, Utils.PASSWORD);
+                    }
+                });
 
         try {
             //Creating MimeMessage object
@@ -88,35 +73,53 @@ public class JavaMailAPI extends AsyncTask<Void,Void,Void>  {
             //Adding message
             mm.setText(mMessage);
             //Sending email
-            Transport t = mSession.getTransport("smtp");
-            t.connect((String)properties.get("mail.smtp.user"), Utils.PASSWORD);
-            t.sendMessage(mm, mm.getAllRecipients());
-            t.close();
-
-
-//            BodyPart messageBodyPart = new MimeBodyPart();
-//
-//            messageBodyPart.setText(message);
-//
-//            Multipart multipart = new MimeMultipart();
-//
-//            multipart.addBodyPart(messageBodyPart);
-//
-//            messageBodyPart = new MimeBodyPart();
-//
-//            DataSource source = new FileDataSource(filePath);
-//
-//            messageBodyPart.setDataHandler(new DataHandler(source));
-//
-//            messageBodyPart.setFileName(filePath);
-//
-//            multipart.addBodyPart(messageBodyPart);
-
-//            mm.setContent(multipart);
+            new SendMail().execute(mm);
 
         } catch (MessagingException e) {
             e.printStackTrace();
         }
-        return null;
+    }
+
+
+
+
+
+
+
+    private class SendMail extends AsyncTask<Message,String,String> implements com.example.evaluacion4.mail.SendMail {
+
+        @Override
+        protected String doInBackground(Message... messages) {
+            try {
+                Transport.send(messages[0]);
+                return "Success";
+            } catch (MessagingException e) {
+                e.printStackTrace();
+                return "Error";
+            }
+
+        }
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            //Show progress dialog while sending email
+            mProgressDialog = ProgressDialog.show(mContext,"Sending message", "Please wait...",false,false);
+        }
+
+        @Override
+        public void onPostExecute(String s) {
+            super.onPostExecute(s);
+            //Dismiss progress dialog when message successfully send
+            mProgressDialog.dismiss();
+
+            if (s.equals("Success")){
+                Toast.makeText(mContext,"Mensaje Enviado",Toast.LENGTH_SHORT).show();
+
+            }else {
+                Toast.makeText(mContext,"Ocurrio un error",Toast.LENGTH_SHORT).show();
+            }
+            //Show success toast
+
+        }
     }
 }

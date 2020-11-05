@@ -52,12 +52,8 @@ public class ActivityContacto extends AppCompatActivity {
         //Send Mail
         JavaMailAPI javaMailAPI = new JavaMailAPI(this,mail,subject,message);
 
-        try {
-            javaMailAPI.doInBackground();
-        }catch (Exception e){
-            String mensaje = e.getMessage();
+        javaMailAPI.enviar();
 
-        }
 
 
 
